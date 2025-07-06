@@ -98,6 +98,14 @@ app.all("*", (req, res, next) => {
 
 app.use((err, req, res, next) => {
   let { statusCode = 500, message = "Something went Wrong!" } = err;
+  res.locals.currUser = req.user;
+  if (typeof req.flash === "function") {
+    res.locals.success = req.flash("success");
+    res.locals.error = req.flash("error");
+  } else {
+    res.locals.success = [];
+    res.locals.error = [];
+  }
   res.status(statusCode).render("errors.ejs", { message });
   // res.status(statusCode).send(message);
 });
