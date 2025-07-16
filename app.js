@@ -49,7 +49,7 @@ const store = MongoStore.create({
   touchAfter: 24 * 3600,
 });
 
-store.on("error", () => {
+store.on("error", function(err) {
   console.log("ERROR in MONGO SESSION STORE", err);
 });
 
@@ -98,6 +98,7 @@ app.all("*", (req, res, next) => {
 
 app.use((err, req, res, next) => {
   let { statusCode = 500, message = "Something went Wrong!" } = err;
+  console.error("Unhandled error:", err); // <-- Add this line
   res.locals.currUser = req.user;
   if (typeof req.flash === "function") {
     res.locals.success = req.flash("success");

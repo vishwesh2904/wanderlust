@@ -1,81 +1,556 @@
 <% layout("/layouts/boilerplate") %>
-<div class="row mt-3">
-  <div class="col-8 offset-2">
-    <br /><br />
-    <h3>Create a New Listing</h3>
-    <form
-      method="POST"
-      action="/listings"
-      novalidate
-      class="needs-validation"
-      enctype="multipart/form-data"
-    >
-      <div class="mb-3">
-        <label for="title" class="form-label">Title</label>
-        <input
-          name="listing[title]"
-          placeholder="Add a title"
-          type="text"
-          class="form-control"
-          required
-        />
-        <div class="invalid-feedback">Enter Title</div>
-      </div>
-      <div class="mb-3">
-        <label for="description" class="form-label">Description</label>
-        <textarea
-          name="listing[description]"
-          class="form-control"
-          required
-        ></textarea>
-        <div class="invalid-feedback">Enter Description</div>
-      </div>
 
-      <div class="mb-3">
-        <label for="image" class="form-label">Upload Image </label>
-        <input
-          name="listing[image]"
-          type="file"
-          class="form-control"
-          required
-        />
-      </div>
+<style>
+  .form-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 40px 0;
+    position: relative;
+    overflow: hidden;
+  }
 
-      <div class="row">
-        <div class="mb-3 col-md-4">
-          <label for="price" class="form-label">Price</label>
-          <input
-            name="listing[price]"
-            placeholder="1000"
-            class="form-control"
-            required
-          />
-          <div class="invalid-feedback">Enter valid price</div>
+  .form-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="60" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="80" r="2.5" fill="rgba(255,255,255,0.1)"/><circle cx="10" cy="90" r="1.5" fill="rgba(255,255,255,0.1)"/></svg>');
+    animation: float 20s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .form-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .form-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7);
+    background-size: 300% 300%;
+    animation: gradient 3s ease infinite;
+  }
+
+  @keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .form-header {
+    text-align: center;
+    margin-bottom: 40px;
+    position: relative;
+  }
+
+  .form-header h3 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+
+  .form-header p {
+    color: #6c757d;
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  .form-section {
+    margin-bottom: 32px;
+    position: relative;
+  }
+
+  .form-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .form-label {
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .form-label i {
+    color: #667eea;
+    font-size: 1.1rem;
+  }
+
+  .form-control, .form-select {
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.9);
+    position: relative;
+  }
+
+  .form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: white;
+    transform: translateY(-1px);
+  }
+
+  .form-control::placeholder {
+    color: #a0aec0;
+    font-weight: 400;
+  }
+
+  textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+  }
+
+  .input-group {
+    position: relative;
+  }
+
+  .input-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #a0aec0;
+    font-size: 1.1rem;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .form-control.has-icon {
+    padding-left: 48px;
+  }
+
+  .file-upload-wrapper {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    width: 100%;
+  }
+
+  .file-upload-wrapper input[type=file] {
+    position: absolute;
+    left: -9999px;
+  }
+
+  .file-upload-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 20px;
+    border: 2px dashed #cbd5e0;
+    border-radius: 12px;
+    background: rgba(247, 250, 252, 0.8);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    font-weight: 500;
+    color: #4a5568;
+  }
+
+  .file-upload-label:hover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+    color: #667eea;
+  }
+
+  .file-upload-label i {
+    font-size: 1.5rem;
+  }
+
+  .price-input-wrapper {
+    position: relative;
+  }
+
+  .price-symbol {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: 600;
+    color: #4a5568;
+    z-index: 2;
+  }
+
+  .price-input {
+    padding-left: 40px;
+  }
+
+  .category-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 16px;
+    padding-right: 40px;
+  }
+
+  .submit-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 16px 40px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+    width: 100%;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    margin-top: 20px;
+  }
+
+  .submit-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  .submit-btn:hover::before {
+    left: 100%;
+  }
+
+  .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+  }
+
+  .submit-btn:active {
+    transform: translateY(0);
+  }
+
+  .invalid-feedback {
+    display: block;
+    color: #e53e3e;
+    font-size: 0.875rem;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+
+  .form-control.is-invalid, .form-select.is-invalid {
+    border-color: #e53e3e;
+  }
+
+  .form-control.is-valid, .form-select.is-valid {
+    border-color: #38a169;
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: #e2e8f0;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 30px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+
+  .form-tips {
+    background: rgba(102, 126, 234, 0.1);
+    border-left: 4px solid #667eea;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+  }
+
+  .form-tips h6 {
+    color: #667eea;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .form-tips p {
+    color: #4a5568;
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 768px) {
+    .form-container {
+      padding: 20px 0;
+    }
+    
+    .form-card {
+      padding: 24px;
+      margin: 0 16px;
+    }
+    
+    .form-header h3 {
+      font-size: 2rem;
+    }
+  }
+</style>
+
+<div class="form-container">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+      <div class="form-card">
+        <div class="form-header">
+          <h3><i class="fas fa-plus-circle"></i> Create New Listing</h3>
+          <p>Share your amazing space with travelers around the world</p>
         </div>
-        <div class="mb-3 col-md-8">
-          <label for="country" class="form-label">Country</label>
-          <input
-            name="listing[country]"
-            placeholder="India"
-            type="text"
-            class="form-control"
-            required
-          />
-          <div class="invalid-feedback">Enter Country</div>
+
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
         </div>
+
+        <div class="form-tips">
+          <h6><i class="fas fa-lightbulb"></i> Quick Tips</h6>
+          <p>Make your listing stand out with a catchy title, detailed description, and high-quality photos!</p>
+        </div>
+
+        <form
+          method="POST"
+          action="/listings"
+          novalidate
+          class="needs-validation"
+          enctype="multipart/form-data"
+          id="listingForm"
+        >
+          <div class="form-section">
+            <label for="title" class="form-label">
+              <i class="fas fa-tag"></i> Listing Title
+            </label>
+            <div class="input-group">
+              <input
+                name="listing[title]"
+                placeholder="e.g., Cozy Beachfront Villa with Ocean View"
+                type="text"
+                class="form-control"
+                required
+                id="title"
+              />
+            </div>
+            <div class="invalid-feedback">Please enter a compelling title for your listing</div>
+          </div>
+
+          <div class="form-section">
+            <label for="description" class="form-label">
+              <i class="fas fa-align-left"></i> Description
+            </label>
+            <textarea
+              name="listing[description]"
+              class="form-control"
+              placeholder="Describe your space, amenities, and what makes it special..."
+              required
+              id="description"
+            ></textarea>
+            <div class="invalid-feedback">Please provide a detailed description</div>
+          </div>
+
+          <div class="form-section">
+            <label for="image" class="form-label">
+              <i class="fas fa-camera"></i> Property Image
+            </label>
+            <div class="file-upload-wrapper">
+              <input
+                name="listing[image]"
+                type="file"
+                class="form-control"
+                required
+                id="image"
+                accept="image/*"
+              />
+              <label for="image" class="file-upload-label">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span>Click to upload image or drag and drop</span>
+              </label>
+            </div>
+            <div class="invalid-feedback">Please upload a property image</div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-section">
+                <label for="price" class="form-label">
+                  <i class="fas fa-rupee-sign"></i> Price per Night
+                </label>
+                <div class="price-input-wrapper">
+                  <span class="price-symbol">₹</span>
+                  <input
+                    name="listing[price]"
+                    placeholder="2500"
+                    class="form-control price-input"
+                    type="number"
+                    min="1"
+                    required
+                    id="price"
+                  />
+                </div>
+                <div class="invalid-feedback">Please enter a valid price</div>
+              </div>
+            </div>
+            
+            <div class="col-md-8">
+              <div class="form-section">
+                <label for="country" class="form-label">
+                  <i class="fas fa-globe"></i> Country
+                </label>
+                <div class="input-group">
+                  <input
+                    name="listing[country]"
+                    placeholder="e.g., India, USA, Thailand"
+                    type="text"
+                    class="form-control"
+                    required
+                    id="country"
+                  />
+                </div>
+                <div class="invalid-feedback">Please enter the country</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <label for="location" class="form-label">
+              <i class="fas fa-map-marker-alt"></i> Location
+            </label>
+            <div class="input-group">
+              <input
+                name="listing[location]"
+                placeholder="e.g., Goa, Maharashtra or New York, NY"
+                type="text"
+                class="form-control"
+                required
+                id="location"
+              />
+            </div>
+            <div class="invalid-feedback">Please enter the location</div>
+          </div>
+
+          <div class="form-section">
+            <label for="category" class="form-label">
+              <i class="fas fa-th-large"></i> Category
+            </label>
+            <select
+              name="listing[category]"
+              class="form-select category-select"
+              required
+              id="category"
+            >
+              <option value="" disabled selected>Choose a category that best describes your property</option>
+              <option value="Trending">🔥 Trending</option>
+              <option value="Rooms">🛏️ Rooms</option>
+              <option value="Iconic cities">🏙️ Iconic cities</option>
+              <option value="Mountains">⛰️ Mountains</option>
+              <option value="Castles">🏰 Castles</option>
+              <option value="Pools">🏊 Pools</option>
+              <option value="Villas">🏡 Villas</option>
+              <option value="Beach">🏖️ Beach</option>
+              <option value="Camping">🏕️ Camping</option>
+              <option value="Farms">🐄 Farms</option>
+              <option value="Arctic">❄️ Arctic</option>
+              <option value="Domes">🏔️ Domes</option>
+              <option value="Boats">⛵ Boats</option>
+              <option value="Others">✨ Others</option>
+            </select>
+            <div class="invalid-feedback">Please select a category</div>
+          </div>
+
+          <button type="submit" class="submit-btn">
+            <i class="fas fa-plus"></i> Create Listing
+          </button>
+        </form>
       </div>
-      <div class="mb-3">
-        <label for="location" class="form-label">Location</label>
-        <input
-          name="listing[location]"
-          placeholder="Enter City and State"
-          type="text"
-          class="form-control"
-          required
-        />
-        <div class="invalid-feedback">Enter Location</div>
-      </div>
-      <button class="btn btn-dark add-btn mt-3">Add</button>
-    </form>
+    </div>
   </div>
 </div>
+
+<script>
+  // Form progress tracking
+  const form = document.getElementById('listingForm');
+  const progressFill = document.getElementById('progressFill');
+  const requiredFields = form.querySelectorAll('[required]');
+  
+  function updateProgress() {
+    let filledFields = 0;
+    requiredFields.forEach(field => {
+      if (field.value.trim() !== '') {
+        filledFields++;
+      }
+    });
+    
+    const progress = (filledFields / requiredFields.length) * 100;
+    progressFill.style.width = progress + '%';
+  }
+  
+  // Add event listeners to all required fields
+  requiredFields.forEach(field => {
+    field.addEventListener('input', updateProgress);
+    field.addEventListener('change', updateProgress);
+  });
+  
+  // File upload label update
+  const fileInput = document.getElementById('image');
+  const fileLabel = document.querySelector('.file-upload-label span');
+  
+  fileInput.addEventListener('change', function(e) {
+    if (e.target.files.length > 0) {
+      fileLabel.textContent = e.target.files[0].name;
+    } else {
+      fileLabel.textContent = 'Click to upload image or drag and drop';
+    }
+    updateProgress();
+  });
+  
+  // Form validation enhancement
+  form.addEventListener('submit', function(e) {
+    if (!form.checkValidity()) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Focus on first invalid field
+      const firstInvalid = form.querySelector(':invalid');
+      if (firstInvalid) {
+        firstInvalid.focus();
+        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+    form.classList.add('was-validated');
+  });
+  
+  // Auto-resize textarea
+  const textarea = document.getElementById('description');
+  textarea.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = (this.scrollHeight) + 'px';
+  });
+  
+  // Initial progress update
+  updateProgress();
+</script>

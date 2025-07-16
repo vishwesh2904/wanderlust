@@ -3,12 +3,25 @@ const Schema = mongoose.Schema;
 const Review = require("./review.js");
 const User = require("../models/user.js");
 const { string } = require("joi");
+const CATEGORY_ENUM = [
+  "Trending",
+  "Rooms",
+  "Iconic cities",
+  "Mountains",
+  "Castles",
+  "Pools",
+  "Villas",
+  "Beach",
+  "Camping",
+  "Farms",
+  "Arctic",
+  "Domes",
+  "Boats",
+  "Others"
+];
 
 const listingSchema = new Schema({
-  title: {
-    type: String,
-    required: true,
-  },
+  title: { type: String, required: true },
   description: String,
   image: {
     url: String,
@@ -29,8 +42,8 @@ const listingSchema = new Schema({
   },
   geometry: {
     type: {
-      type: String, // Don't do `{ location: { type: String } }`
-      enum: ["Point"], // 'location.type' must be 'Point'
+      type: String,
+      enum: ["Point"],
       required: true,
     },
     coordinates: {
@@ -38,8 +51,12 @@ const listingSchema = new Schema({
       required: true,
     },
   },
+  category: {
+    type: String,
+    required: true,
+    enum: CATEGORY_ENUM,
+  },
 });
-
 listingSchema.post("findOneAndDelete", async (listing) => {
   if (listing) {
     await Review.deleteMany({ _id: { $in: listing.reviews } });

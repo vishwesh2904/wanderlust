@@ -40,5 +40,8 @@ router.get(
   isOwner,
   wrapAsync(listingController.renderEditForm)
 );
+ 
+// filter by category
+router.get("/category/:category", wrapAsync(listingController.filterByCategory));
 
 module.exports = router;

@@ -30,29 +30,40 @@ module.exports.showListing = async (req, res) => {
 };
 
 module.exports.createListing = async (req, res, next) => {
-  let response = await geocodingClient
-    .forwardGeocode({
-      query: req.body.listing.location,
-      limit: 1,
-    })
-    .send();
+  try {
+    console.log("Received body:", req.body);
+    console.log("Received file:", req.file);
 
-  let url = req.file.path;
-  let filename = req.file.filename;
+    const geoData = await geocodingClient
+      .forwardGeocode({
+        query: req.body.listing.location,
+        limit: 1,
+      })
+      .send();
 
-  const newListing = new Listing(req.body.listing);
-  newListing.owner = req.user._id;
-  newListing.image = { url, filename };
+    if (!geoData.body.features.length) {
+      req.flash("error", "Invalid location!");
+      return res.redirect("/listings/new");
+    }
 
-  newListing.geometry = response.body.features[0].geometry;
+    let url = req.file ? req.file.path : "";
+    let filename = req.file ? req.file.filename : "";
 
-  let savedListing = await newListing.save();
-  console.log(savedListing);
+    const newListing = new Listing(req.body.listing);
+    newListing.owner = req.user._id;
+    newListing.image = { url, filename };
+    newListing.geometry = geoData.body.features[0].geometry;
 
-  req.flash("success", "New Listing Created");
-  res.redirect("/listings");
+    let savedListing = await newListing.save();
+    console.log("Saved listing:", savedListing);
+
+    req.flash("success", "New Listing Created");
+    res.redirect("/listings");
+  } catch (e) {
+    console.error("Error in createListing:", e);
+    next(e);
+  }
 };
-
 module.exports.renderEditForm = async (req, res) => {
   let { id } = req.params;
   const listing = await Listing.findById(id);
@@ -66,18 +77,23 @@ module.exports.renderEditForm = async (req, res) => {
   res.render("listings/edit.ejs", { listing, originalImageUrl });
 };
 
-module.exports.updateListing = async (req, res) => {
-  let { id } = req.params;
-  let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing });
+module.exports.updateListing = async (req, res, next) => {
+  try {
+    let { id } = req.params;
+    let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing });
 
-  if (typeof req.file !== "undefined") {
-    let url = req.file.path;
-    let filename = req.file.filename;
-    listing.image = { url, filename };
-    await listing.save();
+    if (typeof req.file !== "undefined") {
+      let url = req.file.path;
+      let filename = req.file.filename;
+      listing.image = { url, filename };
+      await listing.save();
+    }
+    req.flash("success", "Listing Updated");
+    res.redirect(`/listings/${id}`);
+  } catch (e) {
+    console.error(e); // This will log the error in your terminal
+    next(e); // This will pass the error to your error handler
   }
-  req.flash("success", "Listing Updated");
-  res.redirect(`/listings/${id}`);
 };
 
 module.exports.destroyListing = async (req, res) => {
@@ -89,3 +105,20 @@ module.exports.destroyListing = async (req, res) => {
   res.redirect("/listings");
 };
 
+module.exports.filterListingsByCategory = async (req, res) => {
+  try {
+    const { category } = req.params;
+    const filteredListings = await Listing.find({ category });
+    res.render("listings/index.ejs", { allListings: filteredListings });
+  } catch (e) {
+    console.error("Error in filterListingsByCategory:", e);
+    req.flash("error", "Unable to filter listings by category");
+    res.redirect("/listings");
+  }
+};
+
+module.exports.filterByCategory = async (req, res) => {
+  const { category } = req.params;
+  const allListings = await Listing.find({ category });
+  res.render("listings/index.ejs", { allListings });
+};
