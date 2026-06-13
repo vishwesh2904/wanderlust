@@ -1,7 +1,7 @@
-const User = require("../models/user");
+const User = require('../models/user');
 
 module.exports.renderSignupForm = (req, res) => {
-  res.render("users/signup.ejs");
+  res.render('users/signup.ejs');
 };
 
 module.exports.signup = async (req, res) => {
@@ -14,22 +14,22 @@ module.exports.signup = async (req, res) => {
       if (err) {
         return next(err);
       }
-      req.flash("success", "Signed up successfully");
-      res.redirect("/listings");
+      req.flash('success', 'Signed up successfully');
+      res.redirect('/listings');
     });
   } catch (e) {
-    req.flash("error", e.message);
-    res.redirect("/signup");
+    req.flash('error', e.message);
+    res.redirect('/signup');
   }
 };
 
 module.exports.renderLoginForm = (req, res) => {
-  res.render("users/login.ejs");
+  res.render('users/login.ejs');
 };
 
 module.exports.login = async (req, res) => {
-  req.flash("success", "Welcome to WanderLust!");
-  let redirectUrl = res.locals.redirectUrl || "/listings";
+  req.flash('success', 'Welcome to RoamNest!');
+  let redirectUrl = res.locals.redirectUrl || '/listings';
   res.redirect(redirectUrl);
 };
 
@@ -38,7 +38,7 @@ module.exports.logout = (req, res, next) => {
     if (err) {
       return next(err);
     }
-    req.flash("success", "you are logged out!");
-    res.redirect("/listings");
+    req.flash('success', 'you are logged out!');
+    res.redirect('/listings');
   });
 };
