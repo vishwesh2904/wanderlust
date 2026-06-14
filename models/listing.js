@@ -1,8 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const Review = require('./review.js');
-const User = require('../models/user.js');
-const { string } = require('joi');
 const CATEGORY_ENUM = [
   'Trending',
   'Rooms',
@@ -56,6 +54,23 @@ const listingSchema = new Schema({
     required: true,
     enum: CATEGORY_ENUM,
   },
+  workcationScore: {
+    internetSpeed: { type: Number, default: 0 },
+    workspaceAvailable: { type: Boolean, default: false },
+    noiseLevel: { type: String, enum: ['Low', 'Moderate', 'High'], default: 'Moderate' },
+    nearbyCafes: { type: Number, default: 0 },
+    powerBackup: { type: Boolean, default: false },
+  },
+  sustainabilityScore: {
+    solarEnergy: { type: Boolean, default: false },
+    waterConservation: { type: Boolean, default: false },
+    wasteManagement: { type: Boolean, default: false },
+    greenCertified: { type: Boolean, default: false },
+  },
+  compatibilityTags: [
+    { type: String, enum: ['Adventure', 'Family', 'Luxury', 'Workcation', 'Budget'] },
+  ],
+  amenities: [String],
 });
 listingSchema.post('findOneAndDelete', async (listing) => {
   if (listing) {
